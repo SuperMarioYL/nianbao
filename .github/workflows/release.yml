@@ -1,0 +1,52 @@
+# Release build: triggered by pushing a tag like v0.1.0.
+#
+# build  → wheel + sdist into dist/, with sha256 checksums, uploaded as a
+#          workflow artifact (the GitHub Release upload is handled outside
+#          this workflow).
+# pypi   → opt-in publish via PyPI trusted publishing. Gated behind the
+#          PYPI_PUBLISH repository variable so a repo without a registered
+#          Trusted Publisher stays green. See BUILD notes for the one-time
+#          setup: register the publisher on PyPI, create the "pypi"
+#          environment, then set vars.PYPI_PUBLISH=true.
+
+name: release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - run: uv sync --dev
+      - run: uv run pytest -q
+      - run: uv build
+      - name: checksums
+        run: sha256sum dist/* > dist/checksums.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  pypi:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') && vars.PYPI_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write # OIDC token for PyPI trusted publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
