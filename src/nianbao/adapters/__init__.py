@@ -61,11 +61,6 @@ def iter_records(path: Path, limit: int | None = None):
         return
 
 
-def read_first_record(path: Path) -> dict | None:
-    """First parsable JSON object in the file, or None if unreadable/empty."""
-    return next(iter_records(path), None)
-
-
 def sniff(path: Path, max_records: int = 50) -> str | None:
     """Identify the log format: 'claude-code' | 'zcode' | 'chat' | None.
 

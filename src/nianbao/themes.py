@@ -22,10 +22,6 @@ class Theme:
     heat_low: tuple[int, int, int]
     heat_high: tuple[int, int, int]
 
-    @property
-    def attribution(self) -> str:
-        return f"{self.label} · 由 Nianbao 生成"
-
 
 THEMES: dict[str, Theme] = {
     "midnight": Theme(

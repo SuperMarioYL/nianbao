@@ -106,13 +106,18 @@ class FontNotFoundError(RuntimeError):
     """No loadable CJK font for card rendering — names the candidates tried."""
 
 
-def load_font(size: int, override: str | Path | None = None) -> ImageFont.FreeTypeFont:
-    """Load a font at ``size``, walking the override + system fallback chain."""
+def _resolve_font_path(override: str | Path | None = None) -> str:
+    """First loadable path in the override + system fallback chain.
+
+    Single owner of the chain walk and its error message — :func:`load_font`
+    and :class:`CardRenderer` both resolve fonts through here.
+    """
     candidates = [str(override)] if override else []
     candidates += list(FONT_CHAIN)
     for path in candidates:
         try:
-            return ImageFont.truetype(path, size)
+            ImageFont.truetype(path, 16)
+            return path
         except OSError:
             continue
     raise FontNotFoundError(
@@ -120,6 +125,11 @@ def load_font(size: int, override: str | Path | None = None) -> ImageFont.FreeTy
         "Tried:\n  " + "\n  ".join(f"- {p}" for p in candidates) + "\n"
         "Install a CJK font (e.g. Noto Sans CJK SC) and pass it with --font."
     )
+
+
+def load_font(size: int, override: str | Path | None = None) -> ImageFont.FreeTypeFont:
+    """Load a font at ``size``, walking the override + system fallback chain."""
+    return ImageFont.truetype(_resolve_font_path(override), size)
 
 
 def _lerp(c1: tuple, c2: tuple, t: float) -> tuple:
@@ -252,24 +262,8 @@ class CardRenderer:
     def __init__(self, theme: Theme, *, lang: str = "zh", font_path=None):
         self.theme = theme
         self.lang = lang
-        self._font_path = self._resolve_font_path(font_path)
+        self._font_path = _resolve_font_path(font_path)
         self._cache: dict[int, ImageFont.FreeTypeFont] = {}
-
-    @staticmethod
-    def _resolve_font_path(font_path) -> str:
-        candidates = [str(font_path)] if font_path else []
-        candidates += list(FONT_CHAIN)
-        for path in candidates:
-            try:
-                ImageFont.truetype(path, 16)
-                return path
-            except OSError:
-                continue
-        raise FontNotFoundError(
-            "no loadable CJK font for card rendering.\n"
-            "Tried:\n  " + "\n  ".join(f"- {p}" for p in candidates) + "\n"
-            "Install a CJK font (e.g. Noto Sans CJK SC) and pass it with --font."
-        )
 
     def _font(self, size: int) -> ImageFont.FreeTypeFont:
         if size not in self._cache:

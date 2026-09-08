@@ -18,7 +18,7 @@ CLAUDE.md
 # build scratch
 .build_metadata*
 .builder_*
-.stage_*
+.stage*
 .spawn.*
 _build_ctx.json
 BUILD_SETUP_NEXT_STEPS.md

@@ -27,14 +27,6 @@ from ..schema import SessionRecord, UserMessage
 from . import is_injected
 
 
-def discover_session_files(root: Path) -> list[Path]:
-    """All ``*.jsonl`` session files under a Claude Code projects root."""
-    root = Path(root)
-    if not root.is_dir():
-        return []
-    return sorted(p for p in root.rglob("*.jsonl") if p.is_file())
-
-
 def _parse_ts(raw: str) -> datetime | None:
     try:
         return datetime.fromisoformat(raw.replace("Z", "+00:00"))
