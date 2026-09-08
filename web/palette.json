@@ -1,0 +1,38 @@
+{
+  "mode": "auto",
+  "id": "e68656-e7d66a-f6acaf-94b6141b82f6",
+  "identity": "https://github.com/supermarioyl/nianbao",
+  "primary": "#e68656",
+  "secondary": "#e7d66a",
+  "highlight": "#f6acaf",
+  "dark": {
+    "bg": "#0a090d",
+    "panel": "#131217",
+    "code": "#141013",
+    "ink": "#fdeeef",
+    "muted": "#b2a6a8",
+    "line": "#3a251d",
+    "primary": "#e68656",
+    "secondary": "#e7d66a",
+    "highlight": "#f6acaf",
+    "accent": "#e68656",
+    "buttonStart": "#ac6440",
+    "buttonEnd": "#81773b",
+    "buttonText": "#ffffff"
+  },
+  "light": {
+    "bg": "#fefbf9",
+    "panel": "#fef9f7",
+    "code": "#fdf7f3",
+    "ink": "#271c1c",
+    "muted": "#72686b",
+    "line": "#f7dacb",
+    "primary": "#a6603e",
+    "secondary": "#7d7339",
+    "highlight": "#936769",
+    "accent": "#a6603e",
+    "buttonStart": "#ac6440",
+    "buttonEnd": "#81773b",
+    "buttonText": "#ffffff"
+  }
+}

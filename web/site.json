@@ -1,0 +1,296 @@
+{
+  "schema": 3,
+  "name": "nianbao",
+  "github": "https://github.com/SuperMarioYL/nianbao",
+  "host": "nianbao.lei6393.com",
+  "lang": {
+    "primary": "zh",
+    "toggle": true
+  },
+  "palette": "auto",
+  "hero": {
+    "eyebrow": {
+      "zh": "Nianbao 年报 · AI 协作年报",
+      "en": "Nianbao · AI Collaboration Yearbook"
+    },
+    "headline": {
+      "zh": "把一年的 Agent 日志\n变成能晒的 AI 协作年报",
+      "en": "Turn a year of agent logs\ninto a shareable yearbook"
+    },
+    "sub": {
+      "zh": "Nianbao 在本机解析 Claude Code、ZCode（GLM CLI）与通用 chat JSONL 的会话日志，算出你的纠正率、吐槽热度和话题漂移，一次运行生成 12 张可分享的年报卡片——全程离线，日志只读。",
+      "en": "Nianbao parses Claude Code, ZCode (GLM CLI) and plain chat JSONL session logs on your machine, computes your correction rate, complaint heat and topic drift, and renders 12 shareable yearbook cards in one run — fully offline, logs read-only."
+    },
+    "href": "#quickstart"
+  },
+  "advantages": [
+    {
+      "title": {
+        "zh": "提供方不会给你看的数字",
+        "en": "The number no provider shows you"
+      },
+      "body": {
+        "zh": "纠正率、吐槽热度、话题漂移——这些关于你自己的行为统计，不会出现在任何提供方的账单或用量页里。r/ClaudeAI 上有位用户手工数过：10,727 条消息，33% 是纠正或吐槽。Nianbao 把这个数字变成一条命令。",
+        "en": "Correction rate, complaint heat, topic drift — behavioral stats about you that never appear in a provider's billing or usage page. One r/ClaudeAI user counted by hand: 10,727 messages, 33% of them corrections or complaints. Nianbao turns that number into one command."
+      }
+    },
+    {
+      "title": {
+        "zh": "跨 harness 的日志适配",
+        "en": "Cross-harness log adapters"
+      },
+      "body": {
+        "zh": "Claude Code 的 ~/.claude/projects、ZCode（GLM CLI）的 model-io 日志、每行一条 {role, content} 的通用 chat JSONL——格式按文件自动嗅探，同一个目录里可以混放。其他 harness 没适配？带一段脱敏日志来提 issue。",
+        "en": "Claude Code's ~/.claude/projects, ZCode (GLM CLI) model-io logs, and plain chat JSONL (one {role, content} per line) — formats are sniffed per file and can be mixed in one directory. Another harness? Bring a redacted sample log to an issue."
+      }
+    },
+    {
+      "title": {
+        "zh": "全程离线，规则明文可审计",
+        "en": "Fully offline, auditable plain-data rules"
+      },
+      "body": {
+        "zh": "一个离线 Python 进程：零网络请求、零遥测、零账号，日志只读。什么算一次「纠正」、什么算「吐槽」，全部定义在 lexicons.py 的中英文明文词典里——不用读代码也能逐条核对。",
+        "en": "One offline Python process: zero network calls, zero telemetry, no accounts, logs strictly read-only. What counts as a correction or a complaint is defined in the plain-data zh/en lexicons in lexicons.py — audit every term without reading code."
+      }
+    }
+  ],
+  "scene": {
+    "kind": "neon-graph",
+    "fallback": "/assets/scene-dark.svg",
+    "fallbackLight": "/assets/scene-light.svg",
+    "caption": {
+      "zh": "本地日志 · 离线解析 · 12 张年报卡片",
+      "en": "Local logs · offline parsing · 12 yearbook cards"
+    }
+  },
+  "story": {
+    "intro": {
+      "title": {
+        "zh": "从一条手工数出来的帖子开始",
+        "en": "It starts with a hand-counted post"
+      },
+      "body": {
+        "zh": "r/ClaudeAI 上有位用户把自己一年的 Claude Code 历史导出来手工数了一遍：10,727 条消息，33% 是纠正或吐槽，其中 895 条是重度的（爆粗、「我从来没让你」）。这个数字谁都好奇，却没有任何产品给你看：提供方只给你看账单，实时监控工具回答的是「现在烧到哪了」，每个好奇的人最后都自己写脚本——写完一次、发个帖、再也不维护。Nianbao 把这条一次性脚本变成维护中的产品：中英双语的纠正 / 吐槽词典（分级、明文可审计）、跨 harness 的日志适配器、可版本化的卡片格式。",
+        "en": "An r/ClaudeAI user exported a year of their Claude Code history and counted by hand: 10,727 messages, 33% of them corrections or complaints, 895 of those serious (swearing, \"I never asked for this\"). Everyone is curious about that number, yet no product shows it to you: providers only show the invoice, real-time monitors ask what you're burning right now, and every curious person ends up writing a throwaway script — once, badly, never maintained. Nianbao turns that throwaway script into a maintained product: zh/en correction and complaint lexicons (severity-graded, auditable plain data), cross-harness log adapters, and a versioned card format."
+      }
+    },
+    "sections": [
+      {
+        "title": {
+          "zh": "一条命令，六张卡片",
+          "en": "One command, six cards"
+        },
+        "body": {
+          "zh": "nianbao 依次：解析日志（带进度条）→ 在终端打印年报摘要 → 把 6 张卡片 × 2 种比例写进 ./nianbao-out/（9:16 1080×1920 适合朋友圈 / 即刻，1:1 1080×1080 适合九宫格，共 12 张 PNG）。总量、纠正时刻、吐槽热度、项目编年、话题迁徙、写在最后——卡片文案中英双语（--lang zh | en），配色三套（--theme midnight | aurora | sunset），每张页脚自带「由 Nianbao 生成」署名：晒图的时候，它自己会说话。",
+          "en": "nianbao parses your logs (with a progress bar), prints the yearbook summary in your terminal, then writes 6 cards × 2 aspect ratios into ./nianbao-out/ (9:16 1080×1920 for full-screen posts, 1:1 1080×1080 for grid posts — 12 PNGs). Totals, corrections, complaint heat, project survival, topic drift, epilogue — card copy ships in zh/en (--lang zh | en) with three themes (--theme midnight | aurora | sunset), and every footer carries a \"Made with Nianbao\" attribution: when you post it, it speaks for itself."
+        },
+        "image": {
+          "light": "/assets/workflow-light.svg",
+          "dark": "/assets/workflow-dark.svg",
+          "alt": {
+            "zh": "年报生成流程：解析日志、终端摘要、六张卡片 × 两种比例",
+            "en": "Yearbook flow: parse logs, terminal summary, six cards × two ratios"
+          },
+          "mobile": {
+            "light": "/assets/workflow-mobile-light.svg",
+            "dark": "/assets/workflow-mobile-dark.svg"
+          }
+        }
+      },
+      {
+        "title": {
+          "zh": "一个离线 Python 进程",
+          "en": "One offline Python process"
+        },
+        "body": {
+          "zh": "没有服务端、没有网络请求、没有守护进程。adapters 按格式嗅探，把各家的 JSONL 归一化成 SessionRecord（用户消息、negation / redo / clarify / revert 四类纠正、severity 1–3 的吐槽、话题关键词）；lexicons 的中英明文词典负责判定；metrics 与 topics（jieba TF-IDF）算出 YearbookReport；最后由 cards 与 themes（Pillow 渲染）输出 PNG。判定规则和卡片格式（CardSpec）都是可版本化的数据资产，不是一次性截图。",
+          "en": "No server, no network calls, no daemon. Adapters sniff each file's format and normalize any harness's JSONL into SessionRecords (user messages, four correction kinds — negation / redo / clarify / revert — severity 1–3 complaints, topic keywords); the plain-data zh/en lexicons do the detection; metrics and topics (jieba TF-IDF) compute the YearbookReport; cards and themes (Pillow rendering) emit the PNGs. Both the detection rules and the card format (CardSpec) are versioned data assets, not one-off screenshots."
+        },
+        "image": {
+          "light": "/assets/architecture-light.svg",
+          "dark": "/assets/architecture-dark.svg",
+          "alt": {
+            "zh": "架构蓝图：adapters 到 SessionRecord、lexicons、metrics、cards 的离线流水线",
+            "en": "Architecture blueprint: the offline pipeline from adapters through SessionRecord, lexicons, metrics, cards"
+          },
+          "mobile": {
+            "light": "/assets/architecture-mobile-light.svg",
+            "dark": "/assets/architecture-mobile-dark.svg"
+          }
+        }
+      },
+      {
+        "title": {
+          "zh": "三种日志格式，自动识别",
+          "en": "Three log formats, auto-detected"
+        },
+        "body": {
+          "zh": "Claude Code（~/.claude/projects/**/*.jsonl，默认目录，过滤 sidechain、meta 和 harness 注入的伪用户消息）、ZCode / GLM CLI（~/.zcode/cli/rollout 的 model-io 日志，request.messages 累积数组去重重建，full / tail / delta 窗口都能拼回一个会话）、通用 chat JSONL（每行一条 {role, content, timestamp?}）。--logs-dir 指向的目录里可以混放多种格式；其他国产 harness（DeepSeek / Qwen 系 CLI）还没有逐一验证。",
+          "en": "Claude Code (~/.claude/projects/**/*.jsonl, the default, with sidechain, meta and harness-injected pseudo-user messages filtered out), ZCode / GLM CLI (model-io logs under ~/.zcode/cli/rollout, rebuilt from deduplicated cumulative request.messages arrays — full / tail / delta windows all stitch back into one session), and plain chat JSONL (one {role, content, timestamp?} per line). --logs-dir can point at a directory mixing all of them; other CN harnesses (DeepSeek / Qwen CLI families) are not verified one by one yet."
+        },
+        "image": {
+          "light": "/assets/integration-light.svg",
+          "dark": "/assets/integration-dark.svg",
+          "alt": {
+            "zh": "支持的日志格式：Claude Code、ZCode / GLM CLI 与通用 chat JSONL 汇入同一适配层",
+            "en": "Supported log formats: Claude Code, ZCode / GLM CLI and plain chat JSONL feeding one adapter layer"
+          },
+          "mobile": {
+            "light": "/assets/integration-mobile-light.svg",
+            "dark": "/assets/integration-mobile-dark.svg"
+          }
+        }
+      }
+    ],
+    "details": [
+      {
+        "title": {
+          "zh": "命令与选项",
+          "en": "Commands and options"
+        },
+        "body": {
+          "zh": "nianbao 跑完整流程（解析 → 终端摘要 → 生成卡片），summary 只打印终端摘要，cards 只生成 PNG 卡片组。选项：--logs-dir（默认 ~/.claude/projects）、--lang zh | en、--theme midnight | aurora | sunset、--font 指定 CJK 字体文件、--out-dir（默认 ./nianbao-out）、--demo 用内置示例会话数据跑完整流程。",
+          "en": "nianbao runs the full flow (parse → terminal summary → render cards), summary prints only the terminal report, and cards renders only the PNG set. Options: --logs-dir (default ~/.claude/projects), --lang zh | en, --theme midnight | aurora | sunset, --font for an explicit CJK font file, --out-dir (default ./nianbao-out), and --demo to run the full flow over bundled sample data."
+        },
+        "code": "uvx nianbao summary --demo          # 只打印终端年报摘要\nuvx nianbao cards --demo --lang en --theme aurora"
+      },
+      {
+        "title": {
+          "zh": "字体与统计时段",
+          "en": "Fonts and reporting period"
+        },
+        "body": {
+          "zh": "macOS 上渲染自动选用 Hiragino Sans GB / STHeiti；Linux 和容器通常没有这些字体，需要 --font 指定一个 CJK 字体（如 NotoSansCJK-Regular.ttc），找不到可用字体时报错会列出尝试过的路径和修复方法。年报区间等于日志里实际最早到最晚的消息时间，不是自然年——刚用两个月，就是一份两个月的年报。",
+          "en": "On macOS the renderer picks Hiragino Sans GB / STHeiti automatically; Linux and containers usually lack them — pass --font /path/to/NotoSansCJK-Regular.ttc. When no font loads, the error lists every path tried and how to fix it. The yearbook spans the earliest to the latest message actually present in your logs, not a calendar year — two months of history gets you a two-month yearbook."
+        },
+        "code": "uvx nianbao cards --demo --font /path/to/NotoSansCJK-Regular.ttc"
+      }
+    ]
+  },
+  "demo": {
+    "title": {
+      "zh": "真实运行记录",
+      "en": "Recorded run"
+    },
+    "note": {
+      "zh": "以下命令与输出逐字复制自 nianbao --demo 的真实运行（内置示例会话数据，完整录制见仓库 assets/demo.cast）。示例数据只有一个会话；换成你自己的历史，同样的命令会输出你的数字。",
+      "en": "The command and output below are copied verbatim from a real nianbao --demo run (bundled sample data; the full recording ships as assets/demo.cast in the repo). The sample has a single session — run the same command over your own history and you get your numbers."
+    },
+    "source": "https://github.com/SuperMarioYL/nianbao",
+    "steps": [
+      {
+        "label": {
+          "zh": "运行示例",
+          "en": "Run the sample"
+        },
+        "body": {
+          "zh": "30 秒试用：内置示例会话跑完整流程，不需要本地日志。",
+          "en": "A 30-second trial: the full flow over bundled sample data, no local history needed."
+        },
+        "command": "nianbao --demo",
+        "output": "--demo：使用内置示例会话数据\n解析会话日志 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1/1 0:00:00\n\n╭────────────────────────────────╮\n│ Nianbao · AI 协作年报          │\n│ 2026-06-03 → 2026-06-03 · 1 天 │\n╰────────────────────────────────╯\n\n  会话   你发出的消息   助手回复   项目\n ───────────────────────────────────────\n     1              6          8      1\n\n╭──────────────────────────────────────────────────────────────────────────────╮\n│ 33% 的消息是在纠正它 —— 2 次纠偏                                             │\n╰──────────────────────────────────────────────────────────────────────────────╯\n╭──────────────────────────────────────────────────────────────────────────────╮\n│ 吐槽 1 次 · 火力最猛的一周 2026年6月 第1周（强度 3 · 1 条）                  │\n╰──────────────────────────────────────────────────────────────────────────────╯\n\n  项目         会话     首次出现     最近一次   存活\n ────────────────────────────────────────────────────\n  api-server      1   2026-06-03   2026-06-03   0 天\n\n 2026-06  文件 · 测试 · 路由 · app · flask · healthz · 他妈的 · 保留\n\n\n╭───────────────────────────────────────────────────────╮\n│ 6 张卡片 × 2 种比例已写入 nianbao-out（共 12 个 PNG） │\n│ 预览：open nianbao-out                                │\n╰───────────────────────────────────────────────────────╯",
+        "image": "/assets/demo-run-light.svg",
+        "imageDark": "/assets/demo-run-dark.svg"
+      },
+      {
+        "label": {
+          "zh": "查看输出",
+          "en": "Inspect the output"
+        },
+        "body": {
+          "zh": "6 张卡片 × 2 种比例，共 12 张 PNG 写入 ./nianbao-out/。",
+          "en": "Six cards × two aspect ratios — 12 PNGs land in ./nianbao-out/."
+        },
+        "command": "ls nianbao-out",
+        "output": "closing-1x1.png\t\tcomplaints-9x16.png\thero-1x1.png\t\tprojects-9x16.png\nclosing-9x16.png\tcorrection-1x1.png\thero-9x16.png\t\ttopics-1x1.png\ncomplaints-1x1.png\tcorrection-9x16.png\tprojects-1x1.png\ttopics-9x16.png",
+        "image": "/assets/demo-cards-light.svg",
+        "imageDark": "/assets/demo-cards-dark.svg"
+      }
+    ]
+  },
+  "quickstart": {
+    "title": {
+      "zh": "三十秒跑出你的第一份年报",
+      "en": "Your first yearbook in thirty seconds"
+    },
+    "body": {
+      "zh": "前置：Python 3.12+ 和 uv。没有本地日志也能先跑示例。",
+      "en": "Prerequisites: Python 3.12+ and uv. No local history needed to try the sample first."
+    },
+    "steps": [
+      {
+        "title": {
+          "zh": "试用内置示例",
+          "en": "Try the bundled sample"
+        },
+        "code": "uvx nianbao --demo"
+      },
+      {
+        "title": {
+          "zh": "跑你自己的历史",
+          "en": "Run over your own history"
+        },
+        "code": "# 默认读 ~/.claude/projects，全程只读\nuvx nianbao"
+      },
+      {
+        "title": {
+          "zh": "接其他 Agent 的日志",
+          "en": "Point it at other agents' logs"
+        },
+        "code": "uvx nianbao --logs-dir ~/.zcode/cli/rollout   # ZCode / GLM CLI"
+      },
+      {
+        "title": {
+          "zh": "没有 uv？从源码跑",
+          "en": "No uv? Install or run from source"
+        },
+        "code": "pip install nianbao\n# 或\ngit clone https://github.com/SuperMarioYL/nianbao && cd nianbao\nuvx --from . nianbao --demo"
+      }
+    ]
+  },
+  "limitations": [
+    {
+      "zh": "卡片文案目前只有中文和英文（--lang zh | en）；纠正 / 吐槽词典中英两套同时生效，中英混聊也能测出行为。",
+      "en": "Card copy is zh/en only for now (--lang zh | en); the correction/complaint lexicons match both languages simultaneously, so mixed-language sessions are still measured."
+    },
+    {
+      "zh": "统计时段是日志里实际最早到最晚的消息时间，不是自然年。",
+      "en": "The reporting period is the earliest-to-latest message range actually present in your logs, not a calendar year."
+    },
+    {
+      "zh": "Linux 与容器需要 --font 指定 CJK 字体；macOS 自动选用 Hiragino Sans GB / STHeiti。",
+      "en": "Linux and containers need --font to point at a CJK font; macOS picks Hiragino Sans GB / STHeiti automatically."
+    },
+    {
+      "zh": "v0.1 不做：token / 成本 / 速率的实时监控，Web 界面与托管服务；其他国产 harness（DeepSeek / Qwen 系 CLI）的本地日志尚未逐一验证。",
+      "en": "Not in v0.1: real-time token/cost/rate monitoring, a web UI or hosted service; other CN harness logs (DeepSeek / Qwen CLI families) are not verified one by one."
+    }
+  ],
+  "cta": {
+    "headline": {
+      "zh": "把你的日志，变成你的年报",
+      "en": "Turn your logs into your yearbook"
+    },
+    "sub": {
+      "zh": "一条命令，全程离线。",
+      "en": "One command, fully offline."
+    },
+    "button": {
+      "zh": "在 GitHub 上开始",
+      "en": "Get started on GitHub"
+    }
+  },
+  "footer": {
+    "tag": {
+      "zh": "本地日志进，可分享的年报出——全程离线。",
+      "en": "Local logs in, a shareable yearbook out — fully offline."
+    }
+  },
+  "meta": {
+    "content_version": "1",
+    "source_version": "v0.1.0",
+    "visual_profile": "neon-particle",
+    "web_factory_ref": "03e7ec8a416f868b847d13b3023bf7d1215db767"
+  }
+}
