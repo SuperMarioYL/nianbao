@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nianbao"
+version = "0.1.0"
+description = "Turn months of local coding-agent session logs into a shareable AI collaboration yearbook."
+license = { text = "MIT" }
+authors = [{ name = "SuperMarioYL" }]
+requires-python = ">=3.12"
+dependencies = [
+    "jieba>=0.42",
+    "rich>=13.7",
+    "Pillow>=10.3",
+    "typer>=0.12",
+]
+keywords = ["claude-code", "coding-agent", "yearbook", "wrapped", "cli"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/SuperMarioYL/nianbao"
+Repository = "https://github.com/SuperMarioYL/nianbao"
+Issues = "https://github.com/SuperMarioYL/nianbao/issues"
+
+[project.scripts]
+nianbao = "nianbao.cli:app"
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nianbao"]
+
+# Ship the sample session with the package so `nianbao --demo` works from a
+# clean install with no local history.
+[tool.hatch.build.targets.wheel.force-include]
+"tests/fixtures" = "nianbao/fixtures"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
