@@ -292,5 +292,27 @@
     "source_version": "v0.2.0",
     "visual_profile": "neon-particle",
     "web_factory_ref": "03e7ec8a416f868b847d13b3023bf7d1215db767"
-  }
+  },
+  "changelog": [
+    {
+      "version": "v0.2.0",
+      "date": "2026-10-09",
+      "title": {
+        "zh": "日历归属修正",
+        "en": "Local-calendar correctness"
+      },
+      "changes": {
+        "zh": [
+          "吐槽热力图、「火力最猛的一周」与话题漂移改按你本机的日历归属，不再被日志里的 UTC 时间戳带偏",
+          "修复混合时区日志（带时区与不带时区时间戳混放、或首条消息缺时间戳）导致的统计崩溃",
+          "话题卡片标题不再为无关键词的月份渲染出「」"
+        ],
+        "en": [
+          "Complaint heatmap, worst week and topic drift now attribute to your machine's local calendar instead of the logs' UTC clock",
+          "Fixed a crash when logs mix zone-aware and naive timestamps (or the first message carries none)",
+          "The topics card headline no longer renders an empty quote for keyword-less months"
+        ]
+      }
+    }
+  ]
 }
