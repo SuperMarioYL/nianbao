@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from nianbao.adapters import claude_code, generic_jsonl, parse_file, sniff
+from nianbao.metrics import compute_yearbook
 
 FIXTURES = Path(__file__).parent / "fixtures"
 SAMPLE = FIXTURES / "sample_session.jsonl"
@@ -234,3 +235,23 @@ def test_parse_file_dispatches_by_sniffed_format(tmp_path):
     ])
     harnesses = {parse_file(p).harness for p in (claude, zcode, chat)}
     assert harnesses == {"claude-code", "zcode", "chat"}
+
+
+# -- cross-file timestamp normalization ---------------------------------------------
+
+
+def test_mixed_naive_aware_chat_files_compute_together(tmp_path):
+    # One export wrote naive local stamps, another UTC "Z" stamps; pre-fix the
+    # metrics fold crashed comparing them (uncaught TypeError).
+    naive = _write(tmp_path / "naive.jsonl", [
+        {"role": "user", "content": "帮我看下这个报错", "timestamp": "2026-06-03T06:00:00"},
+    ])
+    aware = _write(tmp_path / "aware.jsonl", [
+        {"role": "user", "content": "加个登录页", "timestamp": "2026-06-04T06:00:00Z"},
+    ])
+    records = [parsed for parsed in (parse_file(naive), parse_file(aware))
+               if parsed is not None]
+    assert len(records) == 2
+    report = compute_yearbook(records)
+    assert report.total_user_messages == 2
+    assert report.total_sessions == 2

@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from nianbao import cards, lexicons
+from nianbao import cards, lexicons, metrics
 from nianbao.adapters import claude_code
 from nianbao.metrics import compute_yearbook
 from nianbao.schema import SessionRecord, UserMessage
@@ -152,6 +152,76 @@ def test_topic_drift_covers_every_month_with_keywords():
 def test_records_without_user_messages_are_rejected():
     with pytest.raises(ValueError):
         compute_yearbook([])
+
+
+# -- local-calendar normalization (v0.2.0 fixes) -------------------------------
+
+
+def test_localize_makes_every_timestamp_tz_aware():
+    local_offset = datetime.now().astimezone().utcoffset()
+    naive = metrics._localize(datetime(2026, 6, 3, 9, 0))
+    aware = metrics._localize(datetime(2026, 6, 3, 9, 0, tzinfo=timezone.utc))
+    assert naive.tzinfo is not None and naive.utcoffset() == local_offset
+    assert aware.tzinfo is not None and aware.utcoffset() == local_offset
+
+
+def test_mixed_naive_and_aware_records_no_longer_crash():
+    # One chat export wrote naive wall-clock stamps, another wrote UTC "Z"
+    # stamps; pre-fix the fold raised an uncaught TypeError.
+    naive = _session("p", "s1", "2026-06-03T09:00", [
+        ("2026-06-03T09:00", "帮我看下这个报错"),
+    ])
+    naive.started_at = naive.started_at.replace(tzinfo=None)
+    naive.user_msgs[0].ts = naive.user_msgs[0].ts.replace(tzinfo=None)
+    aware = _session("p", "s2", "2026-06-04T09:00", [
+        ("2026-06-04T09:00", "加个登录页"),
+    ])
+    report = compute_yearbook([naive, aware])
+    assert report.total_sessions == 2
+    assert report.total_user_messages == 2
+
+
+def test_complaint_buckets_follow_local_calendar():
+    # 2026-05-31T20:00Z is 2026-06-01 04:00 in UTC+8 — the heat-map month must
+    # be the user's calendar month, not the harness's UTC month.
+    ts = _ts("2026-05-31T20:00")
+    record = SessionRecord(
+        harness="claude-code",
+        project="p",
+        session_id="s1",
+        started_at=ts,
+        turns=1,
+        user_msgs=[UserMessage(ts, "我从来没让你改这个文件")],
+    )
+    lexicons.annotate(record)
+    report = compute_yearbook([record])
+    local = ts.astimezone()
+    assert list(report.complaint_heatmap) == [f"{local.year:04d}-{local.month:02d}"]
+
+
+# -- topics headline -------------------------------------------------------------
+
+
+def test_topics_headline_skips_keywordless_months():
+    # A month whose only messages are stopwords yields an empty keyword list;
+    # the headline must quote real keywords only, never 「」.
+    stopword_only = _session("p", "s1", "2026-05-06T09:00", [
+        ("2026-05-06T09:00", "好的 谢谢 好的"),
+    ])
+    real = _session("p", "s2", "2026-06-10T09:00", [
+        ("2026-06-10T09:00", "优化一下数据库查询"),
+    ])
+    report = compute_yearbook([stopword_only, real])
+    assert cards.build_card_specs(report, "zh")[4].headline == "「优化」"
+    assert cards.build_card_specs(report, "en")[4].headline == '"优化"'
+
+
+def test_topics_headline_empty_when_no_month_has_keywords():
+    only = _session("p", "s1", "2026-05-06T09:00", [
+        ("2026-05-06T09:00", "好的 谢谢 好的"),
+    ])
+    report = compute_yearbook([only])
+    assert cards.build_card_specs(report, "zh")[4].headline == ""
 
 
 # -- card specs + rendering -----------------------------------------------------

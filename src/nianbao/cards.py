@@ -154,7 +154,9 @@ def _worst_week_label(worst: tuple, lang: str) -> str:
 
 
 def _topics_headline(drift: dict[str, list[str]], lang: str) -> str:
-    months = sorted(drift)
+    # A month can carry an empty keyword list (messages that tokenize to
+    # nothing) — quoting it would render 「」 on the card, so drop it first.
+    months = [month for month in sorted(drift) if drift[month]]
     if not months:
         return ""
     quote = ("「{k}」" if lang == "zh" else '"{k}"').format

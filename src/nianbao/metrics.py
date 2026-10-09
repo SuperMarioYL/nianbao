@@ -34,6 +34,33 @@ def _week_slot(ts: datetime) -> int:
     return min((ts.day - 1) // 7, WEEKS_PER_MONTH - 1)
 
 
+def _localize(ts: datetime) -> datetime:
+    """Normalize one timestamp to tz-aware machine-local time.
+
+    Adapters pass through whatever zone the source log carries: Claude Code
+    stamps are UTC-aware, some chat exports write naive local wall clock, and
+    unstamped messages fall back to an aware ``now()``. Comparing a naive /
+    aware mix raises TypeError, and bucketing UTC stamps misattributes the
+    user's local days (month / week / drift all shift after ~16:00 for UTC+8).
+    ``astimezone()`` covers both cases: aware values convert, naive values are
+    interpreted as local wall clock — the only sensible reading of a zoneless
+    stamp.
+    """
+    return ts.astimezone()
+
+
+def _normalize_timestamps(records: list[SessionRecord]) -> None:
+    """Rewrite every record timestamp onto the local calendar, in place."""
+    for rec in records:
+        rec.started_at = _localize(rec.started_at)
+        for msg in rec.user_msgs:
+            msg.ts = _localize(msg.ts)
+        for correction in rec.corrections:
+            correction.ts = _localize(correction.ts)
+        for complaint in rec.complaints:
+            complaint.ts = _localize(complaint.ts)
+
+
 def compute_yearbook(records: list[SessionRecord]) -> YearbookReport:
     """Aggregate session records into a YearbookReport.
 
@@ -43,6 +70,9 @@ def compute_yearbook(records: list[SessionRecord]) -> YearbookReport:
     records = [r for r in records if r.user_msgs]
     if not records:
         raise ValueError("no sessions with user messages to analyze")
+
+    # One calendar for the whole report: local, never a naive/aware mix.
+    _normalize_timestamps(records)
 
     # Session topics: TF-IDF across sessions.
     session_docs = {
