@@ -288,8 +288,8 @@
     }
   },
   "meta": {
-    "content_version": "1",
-    "source_version": "v0.1.0",
+    "content_version": "2",
+    "source_version": "v0.2.0",
     "visual_profile": "neon-particle",
     "web_factory_ref": "03e7ec8a416f868b847d13b3023bf7d1215db767"
   }

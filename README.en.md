@@ -9,7 +9,7 @@
 A year of conversations with Claude Code and other coding agents sits untouched in your local logs. Nianbao digs through those session records, computes your correction rate, complaint heat and topic drift, and renders a shareable "AI collaboration yearbook".
 
 [![CI](https://github.com/SuperMarioYL/nianbao/actions/workflows/ci.yml/badge.svg)](https://github.com/SuperMarioYL/nianbao/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-0.1.0-e13e3e)](https://github.com/SuperMarioYL/nianbao/releases)
+[![Version](https://img.shields.io/badge/version-0.2.0-e13e3e)](https://github.com/SuperMarioYL/nianbao/releases)
 [![Python](https://img.shields.io/badge/python-3.12%2B-3776ab)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-e13e3e)](./LICENSE)
 ![Offline](https://img.shields.io/badge/100%25_offline-runs_locally-e13e3e)

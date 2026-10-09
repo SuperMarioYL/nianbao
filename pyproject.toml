@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nianbao"
-version = "0.1.0"
+version = "0.2.0"
 description = "Turn months of local coding-agent session logs into a shareable AI collaboration yearbook."
 license = { text = "MIT" }
 authors = [{ name = "SuperMarioYL" }]

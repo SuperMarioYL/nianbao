@@ -10,7 +10,7 @@
 Coding Agent 会话记录挖出来，算出你的纠正率、吐槽热度和话题漂移，生成一张能晒的「AI 协作年报」。
 
 [![CI](https://github.com/SuperMarioYL/nianbao/actions/workflows/ci.yml/badge.svg)](https://github.com/SuperMarioYL/nianbao/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-0.1.0-e13e3e)](https://github.com/SuperMarioYL/nianbao/releases)
+[![Version](https://img.shields.io/badge/version-0.2.0-e13e3e)](https://github.com/SuperMarioYL/nianbao/releases)
 [![Python](https://img.shields.io/badge/python-3.12%2B-3776ab)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-e13e3e)](./LICENSE)
 ![Offline](https://img.shields.io/badge/100%25_offline-%E6%9C%AC%E5%9C%B0%E8%BF%90%E8%A1%8C-e13e3e)
