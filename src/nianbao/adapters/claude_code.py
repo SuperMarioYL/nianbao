@@ -27,7 +27,15 @@ from ..schema import SessionRecord, UserMessage
 from . import is_injected
 
 
-def _parse_ts(raw: str) -> datetime | None:
+def _parse_ts(raw) -> datetime | None:
+    """ISO-8601 timestamp from a log field; None for anything else.
+
+    The field is untrusted: hand-rolled exports write epoch numbers or arrays.
+    Only strings are parsed, so a malformed value degrades to "no timestamp"
+    instead of aborting the whole run.
+    """
+    if not isinstance(raw, str) or not raw:
+        return None
     try:
         return datetime.fromisoformat(raw.replace("Z", "+00:00"))
     except (TypeError, ValueError):
@@ -57,6 +65,7 @@ def parse_session_file(path: Path) -> SessionRecord | None:
     path = Path(path)
     user_msgs: list[UserMessage] = []
     assistant_count = 0
+    assistant_ids: set[str] = set()
     session_id = path.stem
     project: str | None = None
     started_at: datetime | None = None
@@ -84,19 +93,29 @@ def parse_session_file(path: Path) -> SessionRecord | None:
                 session_id = record["sessionId"]
             if not project:
                 cwd = record.get("cwd")
-                if cwd:
+                if isinstance(cwd, str) and cwd:
                     project = Path(cwd).name or None
             if record.get("isSidechain"):
                 continue
             if record.get("isMeta") or record.get("isCompactSummary"):
                 continue
 
+            message = record.get("message")
+            message = message if isinstance(message, dict) else {}
             kind = record.get("type")
             if kind == "user":
-                text = _typed_text((record.get("message") or {}).get("content"))
+                text = _typed_text(message.get("content"))
                 if text is not None and ts is not None:
                     user_msgs.append(UserMessage(ts, text))
             elif kind == "assistant":
+                # One API response is written as several records — one per
+                # thinking / text / tool_use block — all sharing message.id.
+                # Count replies, not content blocks.
+                msg_id = message.get("id")
+                if isinstance(msg_id, str) and msg_id:
+                    if msg_id in assistant_ids:
+                        continue
+                    assistant_ids.add(msg_id)
                 assistant_count += 1
 
     if not user_msgs or started_at is None:

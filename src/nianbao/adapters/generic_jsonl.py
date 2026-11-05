@@ -119,6 +119,13 @@ def parse_model_io_file(path: Path) -> SessionRecord | None:
         return None
 
     conversation = _rebuild_conversation(model_io_records)
+    # Best-effort date for a message whose carrying call has no startedAt: the
+    # file's own first known stamp, never the wall clock (the report period
+    # must not acquire a session in the current month).
+    file_started = next(
+        (ts for r in model_io_records if (ts := _parse_ts(r.get("startedAt")))),
+        None,
+    )
     user_msgs: list[UserMessage] = []
     assistant_count = 0
     for started, message in conversation:
@@ -126,13 +133,15 @@ def parse_model_io_file(path: Path) -> SessionRecord | None:
         if role == "user":
             text = _message_text(message.get("content"))
             if text is not None:
-                user_msgs.append(UserMessage(started or datetime.now(timezone.utc), text))
+                user_msgs.append(
+                    UserMessage(started or file_started or datetime.now(timezone.utc), text)
+                )
         elif role == "assistant":
             assistant_count += 1
 
     if not user_msgs:
         return None
-    first_started = _parse_ts(model_io_records[0].get("startedAt")) or datetime.now(timezone.utc)
+    first_started = file_started or datetime.now(timezone.utc)
     session_id = model_io_records[0].get("sessionId") or path.stem
     record_out = SessionRecord(
         harness="zcode",
@@ -150,7 +159,7 @@ def parse_model_io_file(path: Path) -> SessionRecord | None:
 def parse_chat_file(path: Path) -> SessionRecord | None:
     """Project a plain per-line chat JSONL onto a SessionRecord."""
     path = Path(path)
-    user_msgs: list[UserMessage] = []
+    stamped: list[tuple[datetime | None, str]] = []
     assistant_count = 0
     started_at: datetime | None = None
     session_id = path.stem
@@ -179,17 +188,22 @@ def parse_chat_file(path: Path) -> SessionRecord | None:
             if role == "user":
                 text = _message_text(content)
                 if text is not None:
-                    user_msgs.append(UserMessage(ts or started_at or datetime.now(timezone.utc), text))
+                    stamped.append((ts, text))
             elif role == "assistant":
                 assistant_count += 1
 
-    if not user_msgs:
+    if not stamped:
         return None
+    # A line without a timestamp is dated from the file's own timeline (its
+    # first stamped line), never from the wall clock: an unstamped opening
+    # message must not add a session in the current month to the yearbook.
+    fallback = started_at or datetime.now(timezone.utc)
+    user_msgs = [UserMessage(ts or fallback, text) for ts, text in stamped]
     record_out = SessionRecord(
         harness="chat",
         project=path.parent.name,
         session_id=session_id,
-        started_at=started_at or datetime.now(timezone.utc),
+        started_at=fallback,
         turns=len(user_msgs),
         assistant_msgs=assistant_count,
         user_msgs=user_msgs,

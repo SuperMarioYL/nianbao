@@ -271,3 +271,30 @@ def test_font_error_names_candidates_and_flag(monkeypatch):
     with pytest.raises(cards.FontNotFoundError) as exc:
         cards.load_font(32)
     assert "--font" in str(exc.value)
+
+
+def test_card_rows_fit_their_pixel_budget():
+    # CJK glyphs are about twice as wide as Latin ones at the same size, so a
+    # character-count truncation overflowed the project column (the bar track
+    # covered the ellipsis) and the drift row ran off the canvas.
+    try:
+        font = cards.load_font(34)
+    except cards.FontNotFoundError:
+        pytest.skip("no CJK font available on this machine")
+    cjk_name = "统一缓存管理系统重构项目"
+    fitted = cards._truncate_to_width(cjk_name, font, 310)
+    assert font.getlength(fitted) <= 310
+    assert fitted.endswith("…")
+
+    drift_row = " · ".join([
+        "getuserauthenticationservice",
+        "handlesubmitbuttonclick",
+        "notificationdispatcher",
+    ])
+    fitted_row = cards._truncate_to_width(drift_row, font, 640)
+    assert font.getlength(fitted_row) <= 640
+    assert fitted_row.endswith("…")
+
+    # Text that already fits is returned untouched.
+    assert cards._truncate_to_width("web", font, 310) == "web"
+

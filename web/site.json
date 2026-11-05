@@ -289,11 +289,33 @@
   },
   "meta": {
     "content_version": "2",
-    "source_version": "v0.2.0",
+    "source_version": "v0.3.0",
     "visual_profile": "neon-particle",
     "web_factory_ref": "03e7ec8a416f868b847d13b3023bf7d1215db767"
   },
   "changelog": [
+    {
+      "version": "v0.3.0",
+      "date": "2026-11-06",
+      "title": {
+        "zh": "\u7edf\u8ba1\u53e3\u5f84\u4fee\u6b63",
+        "en": "Metric and input correctness"
+      },
+      "changes": {
+        "zh": [
+          "\u300c\u52a9\u624b\u56de\u590d\u300d\u6309 message.id \u53bb\u91cd\uff1aClaude Code \u628a\u4e00\u6b21\u56de\u590d\u62c6\u6210\u591a\u6761\u8bb0\u5f55\uff0c\u6b64\u524d\u9010\u6761\u8ba1\u6570\uff0c\u771f\u5b9e\u65e5\u5fd7\u4e0a\u628a\u56de\u590d\u6570\u653e\u5927\u7ea6 3 \u500d",
+          "\u5355\u6761\u7578\u5f62\u65e5\u5fd7\u8bb0\u5f55\uff08\u6570\u5b57\u65f6\u95f4\u6233\u3001\u5b57\u7b26\u4e32 message\u3001\u975e\u5b57\u7b26\u4e32 cwd\uff09\u4e0d\u518d\u8ba9\u6574\u6b21\u8fd0\u884c\u629b\u51fa\u539f\u59cb\u5f02\u5e38",
+          "\u7f3a\u65f6\u95f4\u6233\u7684\u6d88\u606f\u6309\u6587\u4ef6\u81ea\u8eab\u65f6\u95f4\u7ebf\u8865\u65e5\u671f\uff0c\u4e0d\u518d\u7528\u300c\u73b0\u5728\u300d\uff0c\u5e74\u62a5\u91cc\u4e0d\u4f1a\u518d\u51ed\u7a7a\u591a\u51fa\u4e00\u4e2a\u5f53\u6708\u4f1a\u8bdd",
+          "\u5361\u7247\u884c\u6587\u6848\u6309\u50cf\u7d20\u5bbd\u5ea6\u622a\u65ad\uff1a\u6c49\u5b57\u9879\u76ee\u540d\u4e0d\u518d\u538b\u5230\u8fdb\u5ea6\u6761\u4e0a\uff0c\u957f\u5173\u952e\u8bcd\u4e5f\u4e0d\u518d\u8dd1\u51fa\u753b\u5e03"
+        ],
+        "en": [
+          "Assistant replies are deduplicated by message.id: Claude Code splits one reply into several records, which had inflated the reply total about 3x on real logs",
+          "A single malformed log record (numeric timestamp, string message, non-string cwd) no longer aborts the run with a raw traceback",
+          "Messages without a timestamp are dated from the file's own timeline instead of the wall clock, so a yearbook can no longer gain a phantom current-month session",
+          "Card row text is truncated by pixel width, so CJK project names no longer collide with the bar track and long keywords stay on the canvas"
+        ]
+      }
+    },
     {
       "version": "v0.2.0",
       "date": "2026-10-09",

@@ -122,6 +122,52 @@ def test_claude_code_filters_harness_noise(tmp_path):
     assert record.assistant_msgs == 1
 
 
+def test_assistant_replies_counted_once_per_message_id(tmp_path):
+    # Claude Code writes one record per content block (thinking / text /
+    # tool_use) of a single API response; they all share message.id. Counting
+    # records tripled the 助手回复 headline on real logs (2,066 records for 721
+    # replies on this machine's corpus).
+    path = _write(tmp_path / "s.jsonl", [
+        {"type": "user", "message": {"role": "user", "content": "写个函数"},
+         "timestamp": "2026-06-03T09:00:00Z"},
+        {"type": "assistant",
+         "message": {"id": "msg_1", "role": "assistant", "content": [{"type": "thinking"}]},
+         "timestamp": "2026-06-03T09:00:01Z"},
+        {"type": "assistant",
+         "message": {"id": "msg_1", "role": "assistant", "content": [{"type": "text", "text": "好"}]},
+         "timestamp": "2026-06-03T09:00:02Z"},
+        {"type": "assistant",
+         "message": {"id": "msg_1", "role": "assistant", "content": [{"type": "tool_use", "name": "Read"}]},
+         "timestamp": "2026-06-03T09:00:03Z"},
+        {"type": "assistant",
+         "message": {"id": "msg_2", "role": "assistant", "content": [{"type": "text", "text": "完成"}]},
+         "timestamp": "2026-06-03T09:00:04Z"},
+    ])
+    record = claude_code.parse_session_file(path)
+    assert record is not None
+    assert record.assistant_msgs == 2  # two API responses, not four records
+
+
+def test_malformed_records_are_skipped_not_fatal(tmp_path):
+    # Hand-rolled exports carry an epoch timestamp, a string `message`, or a
+    # numeric `cwd`. Pre-fix each one aborted the whole run with an uncaught
+    # AttributeError / TypeError instead of being skipped like a bad JSON line.
+    path = _write(tmp_path / "s.jsonl", [
+        {"type": "user", "message": {"role": "user", "content": "数字时间戳"},
+         "timestamp": 1759000000},
+        {"type": "user", "message": "字符串 message",
+         "timestamp": "2026-06-03T09:00:00Z"},
+        {"type": "user", "message": {"role": "user", "content": "数字 cwd"},
+         "cwd": 123, "timestamp": "2026-06-03T09:01:00Z"},
+        {"type": "user", "message": {"role": "user", "content": "正常消息"},
+         "cwd": "/Users/x/proj", "timestamp": "2026-06-03T09:02:00Z"},
+    ])
+    record = claude_code.parse_session_file(path)
+    assert record is not None
+    assert [m.text for m in record.user_msgs] == ["数字 cwd", "正常消息"]
+    assert record.project == "proj"
+
+
 # -- ZCode / GLM model-io --------------------------------------------------------
 
 
@@ -217,6 +263,23 @@ def test_chat_file_counts_per_line(tmp_path):
     assert record.assistant_msgs == 1
     assert record.started_at == datetime(2026, 6, 3, 6, 0, 0, tzinfo=timezone.utc)
     assert [c.kind for c in record.corrections] == ["negation"]
+
+
+def test_unstamped_chat_message_uses_file_timeline(tmp_path):
+    # The v0.2.0 notes call out "the first message carries no timestamp".
+    # Pre-fix that message was dated datetime.now(), so a 2025 conversation
+    # gained a phantom current-month bucket and a 600+ day period.
+    path = _write(tmp_path / "chat.jsonl", [
+        {"role": "user", "content": "第一句没有时间戳"},
+        {"role": "user", "content": "第二句", "timestamp": "2025-03-01T10:00:00Z"},
+        {"role": "user", "content": "第三句", "timestamp": "2025-03-02T10:00:00Z"},
+    ])
+    record = generic_jsonl.parse_chat_file(path)
+    assert record is not None
+    assert [m.ts.year for m in record.user_msgs] == [2025, 2025, 2025]
+    report = compute_yearbook([record])
+    assert sorted(report.topic_drift) == ["2025-03"]
+    assert report.period_end == datetime(2025, 3, 2, 10, 0, tzinfo=timezone.utc)
 
 
 # -- dispatch ----------------------------------------------------------------------

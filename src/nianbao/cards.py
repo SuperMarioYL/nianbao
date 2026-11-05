@@ -140,6 +140,26 @@ def _truncate(text: str, limit: int) -> str:
     return text if len(text) <= limit else text[:limit] + "…"
 
 
+def _truncate_to_width(text: str, font: ImageFont.FreeTypeFont, max_width: int) -> str:
+    """Ellipsize ``text`` to the widest prefix that fits ``max_width`` pixels.
+
+    Character-count truncation is wrong for a Chinese-first product: a CJK
+    glyph is about twice as wide as a Latin one at the same size, so a character
+    budget that fits a Latin name overflows the column and collides with the
+    next element.
+    """
+    if font.getlength(text) <= max_width:
+        return text
+    low, high = 0, len(text)
+    while low < high:
+        mid = (low + high + 1) // 2
+        if font.getlength(text[:mid] + "…") <= max_width:
+            low = mid
+        else:
+            high = mid - 1
+    return text[:low] + "…"
+
+
 def _period_label(report: YearbookReport) -> str:
     if report.period_start.year == report.period_end.year:
         return str(report.period_start.year)
@@ -418,7 +438,7 @@ class CardRenderer:
             cy = y0 + r * (row_h + gap)
             mid = cy + row_h // 2
             draw.text(
-                (x0, mid), _truncate(name, 9),
+                (x0, mid), _truncate_to_width(name, name_font, name_w - 20),
                 font=name_font, fill=self.theme.text, anchor="lm",
             )
             draw.rounded_rectangle(
@@ -453,7 +473,8 @@ class CardRenderer:
                 font=month_font, fill=self.theme.accent_soft, anchor="la",
             )
             draw.text(
-                (x0 + 200, cy), " · ".join(kws),
+                (x0 + 200, cy),
+                _truncate_to_width(" · ".join(kws), kw_font, x1 - (x0 + 200)),
                 font=kw_font, fill=self.theme.text_dim, anchor="la",
             )
 
